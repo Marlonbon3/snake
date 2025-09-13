@@ -21,7 +21,9 @@ const Snake: React.FC<SnakeProps> = ({ snake, color, cellSize }) => {
               left: segment.x * cellSize,
               top: segment.y * cellSize,
               backgroundColor: color,
-              borderRadius: index === 0 ? cellSize / 4 : 0, // Cabeza un poco redondeada
+              borderRadius: index === 0 ? cellSize / 2 : 6,
+              borderWidth: index === 0 ? 2 : 1,
+              borderColor: '#FFF',
             },
           ]}
         />

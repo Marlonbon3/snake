@@ -1,5 +1,4 @@
 import React from 'react';
-// --- NUEVO: Importa 'Platform' ---
 import { StyleSheet, View, Text, PanResponder, Platform } from 'react-native'; 
 import Snake from './Snake';
 import Food from './Food';
@@ -7,6 +6,7 @@ import Food from './Food';
 // --- Constantes del Juego ---
 const GRID_SIZE = 15;
 const CELL_SIZE = 20;
+const COLORS = ['#34C759', '#FF3B30', '#FF9500', '#FFCC00', '#007AFF', '#AF52DE', '#FF2D55'];
 
 // --- Funciones de Ayuda ---
 const getRandomCoordinates = () => {
@@ -18,6 +18,10 @@ const getRandomCoordinates = () => {
   };
 };
 
+const getRandomColor = () => {
+  return COLORS[Math.floor(Math.random() * COLORS.length)];
+};
+
 const Game = () => {
   // --- Estados del Juego ---
   const [snake, setSnake] = React.useState([{ x: 2, y: 2 }]);
@@ -25,7 +29,8 @@ const Game = () => {
   const [direction, setDirection] = React.useState('RIGHT');
   const [score, setScore] = React.useState(0);
   const [isGameOver, setIsGameOver] = React.useState(false);
-  const [snakeColor, setSnakeColor] = React.useState('#00FF00');
+  const [speed, setSpeed] = React.useState(200); // Velocidad inicial
+  const [snakeColor, setSnakeColor] = React.useState('#34C759'); // color inicial (verde)
 
   // --- Lógica de Reinicio ---
   const resetGame = () => {
@@ -33,8 +38,9 @@ const Game = () => {
     setFood(getRandomCoordinates());
     setDirection('RIGHT');
     setScore(0);
-    setSnakeColor('#00FF00');
     setIsGameOver(false);
+    setSpeed(200);
+    setSnakeColor('#34C759'); // reinicia con verde
   };
 
   // --- Control de Gestos (Swipes) para móvil ---
@@ -52,9 +58,8 @@ const Game = () => {
     },
   });
 
-  // --- NUEVO: Manejo de Teclado para la web ---
+  // --- Manejo de Teclado para la web ---
   React.useEffect(() => {
-    // Solo añade el listener si estamos en la web
     if (Platform.OS !== 'web') return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -75,24 +80,20 @@ const Game = () => {
     };
 
     document.addEventListener('keydown', handleKeyDown);
-
-    // Limpia el listener cuando el componente se desmonte
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [direction]); // Se vuelve a ejecutar si la dirección cambia
-
+  }, [direction]);
 
   // --- Game Loop ---
   React.useEffect(() => {
     if (isGameOver) return;
-    const gameInterval = setInterval(moveSnake, 200);
+    const gameInterval = setInterval(moveSnake, speed);
     return () => clearInterval(gameInterval);
-  }, [snake, isGameOver]);
+  }, [snake, isGameOver, speed]);
 
   // --- Lógica de Movimiento y Colisiones ---
   const moveSnake = () => {
-    // ... (El resto de esta función es igual, no necesita cambios)
     const newSnake = [...snake];
     const head = { ...newSnake[0] };
 
@@ -103,11 +104,13 @@ const Game = () => {
       case 'RIGHT': head.x += 1; break;
     }
 
+    // Colisión con bordes
     if (head.x < 0 || head.x >= GRID_SIZE || head.y < 0 || head.y >= GRID_SIZE) {
       setIsGameOver(true);
       return;
     }
 
+    // Colisión con sí mismo
     for (let i = 1; i < newSnake.length; i++) {
       if (head.x === newSnake[i].x && head.y === newSnake[i].y) {
         setIsGameOver(true);
@@ -117,11 +120,12 @@ const Game = () => {
 
     newSnake.unshift(head);
 
+    // Comer comida
     if (head.x === food.x && head.y === food.y) {
       setScore(score + 1);
       setFood(getRandomCoordinates());
-      const newColor = `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`;
-      setSnakeColor(newColor);
+      setSpeed((prev) => Math.max(50, prev - 10)); 
+      setSnakeColor(getRandomColor()); // cambia color cada que come
     } else {
       newSnake.pop();
     }
@@ -153,7 +157,7 @@ const Game = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1E1E1E',
+    backgroundColor: '#000',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -162,40 +166,41 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: 'bold',
     position: 'absolute',
-    top: 80,
+    top: 60,
   },
   gameArea: {
-    borderWidth: 2,
+    borderWidth: 3,
     borderColor: '#FFF',
-    backgroundColor: '#333',
+    backgroundColor: '#111',
     position: 'relative',
   },
   gameOverOverlay: {
     position: 'absolute',
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    backgroundColor: 'rgba(0, 0, 0, 0.85)',
     width: '100%',
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
   },
   gameOverText: {
-    color: 'red',
+    color: '#FFF',
     fontSize: 40,
     fontWeight: 'bold',
   },
   finalScoreText: {
-    color: 'white',
-    fontSize: 24,
+    color: '#FFF',
+    fontSize: 22,
     marginTop: 10,
   },
   resetButton: {
-    color: '#00FF00',
-    fontSize: 20,
+    color: '#000',
+    backgroundColor: '#FFF',
+    fontSize: 18,
     marginTop: 30,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#00FF00',
-    borderRadius: 5,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    fontWeight: 'bold',
   },
 });
 

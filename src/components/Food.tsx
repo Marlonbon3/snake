@@ -16,6 +16,7 @@ const Food: React.FC<FoodProps> = ({ food, cellSize }) => {
           height: cellSize,
           left: food.x * cellSize,
           top: food.y * cellSize,
+          borderRadius: cellSize / 2, // círculo perfecto
         },
       ]}
     />
@@ -24,9 +25,12 @@ const Food: React.FC<FoodProps> = ({ food, cellSize }) => {
 
 const styles = StyleSheet.create({
   food: {
-    backgroundColor: 'red',
-    borderRadius: 5,
+    backgroundColor: '#FFF',
     position: 'absolute',
+    shadowColor: '#FFF',
+    shadowOpacity: 0.8,
+    shadowRadius: 6,
+    elevation: 5, // efecto glow en Android
   },
 });
 
